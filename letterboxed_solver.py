@@ -256,9 +256,11 @@ class Board:
 def compile_dictionary() -> None:
     """
     Compiles a list of words from the GNU Collaborative International
-    Dictionary of English and saves it as a pickle file.
+    Dictionary of English and saves them in a text file.
+
+    Removes proper nouns, obsolete words, and malformed entries.
     """
-    outfile = Path('raw_words.pkl')
+    outfile = Path('cleaned_words.txt')
     if not outfile.exists():
         base_path = 'gcide-0.53/CIDE.'
         words = []
@@ -266,6 +268,8 @@ def compile_dictionary() -> None:
 
         for letter in string.ascii_uppercase:
             alpha_path = base_path + letter
+            # There are 3 bad characters across all files - no major loses when
+            # using errors='replace'.
             with open(alpha_path, 'r', errors='replace') as infile:
 
                 soup = BeautifulSoup(infile, 'html.parser')
@@ -282,8 +286,20 @@ def compile_dictionary() -> None:
                     if num_words_parsed % 1000 == 0:
                         print(f'{num_words_parsed}\t-\t{alpha_path}')
 
-        with open(outfile, 'wb') as f:
-            pickle.dump(words, f)
+        with open(outfile, 'w') as f:
+            for word, word_type, mark in words:
+
+                if not isinstance(word, str):
+                    continue
+
+                if word_type is not None and 'prop' in word_type:
+                    continue
+
+                # Remove words marked as obsolete.
+                if mark is not None and 'Obs.' in mark:
+                    continue
+
+                f.write(word + '\n')
 
 
 def get_allowable_words(board: Board,
@@ -305,18 +321,10 @@ def get_allowable_words(board: Board,
     optimal_words = FLWordDict()
     num_bad_entries = 0
     num_not_alpha = 0
-    nouns = 0
-    obsolete = 0
     board_invalidated = 0
     added = 0
 
-    for word_attrs in words:
-        word_type = None
-        mark = None
-        if mode == 'detailed':
-            word, word_type, mark = word_attrs
-        else:
-            word = word_attrs
+    for word in words:
 
         if not isinstance(word, str):
             num_bad_entries += 1
@@ -330,16 +338,6 @@ def get_allowable_words(board: Board,
             board_invalidated += 1
             continue
 
-        # Remove proper nouns.
-        if word_type is not None and 'prop' in word_type:
-            nouns += 1
-            continue
-
-        # Remove words marked as obsolete.
-        if mark is not None and 'Obs.' in mark:
-            obsolete += 1
-            continue
-
         added += 1
         optimal_words.add_word(word)
     if verbose:
@@ -347,8 +345,6 @@ def get_allowable_words(board: Board,
               f'\n Bad Entries: {num_bad_entries}'
               f'\n Non-Alphabetical Entries: {num_not_alpha}'
               f'\n Incompatible with Board: {board_invalidated}'
-              f'\n Proper Nouns: {nouns}'
-              f'\n Obsolete: {obsolete}'
               f'\n Considered: {added}'
               f'\n Final Optimal Words: {len(optimal_words.entries)}')
     return optimal_words
