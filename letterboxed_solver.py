@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import Dict, List, Union, Set, Tuple, Iterable
 from bs4 import BeautifulSoup
 from pathlib import Path
-import pickle
 from itertools import product
 import random
 
@@ -313,10 +312,6 @@ def get_allowable_words(board: Board,
     :param words: A list of words or tuples containing the word and its attributes.
     :return: An FLWordDict object containing the optimal words.
     """
-    if isinstance(words[0], tuple):
-        mode = 'detailed'
-    else:
-        mode = 'plain'
 
     optimal_words = FLWordDict()
     num_bad_entries = 0
@@ -427,7 +422,7 @@ class LetterChainIterator:
 
             # We have exhausted the possibilities at position in the chain.
             # Reset this position and iterate the previous one.
-            elif empty_layer and pos != 0:
+            elif empty_layer and pos > -1:
                 self.remaining_options[pos] = self.letters.copy()
                 self.chain[pos] = self.get_next_state(pos)
                 pos -= 1
