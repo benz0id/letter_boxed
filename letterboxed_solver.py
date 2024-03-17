@@ -422,14 +422,14 @@ class LetterChainIterator:
 
             # We have exhausted the possibilities at position in the chain.
             # Reset this position and iterate the previous one.
-            elif empty_layer and pos > -1:
+            elif empty_layer and not pos == 0:
                 self.remaining_options[pos] = self.letters.copy()
                 self.chain[pos] = self.get_next_state(pos)
                 pos -= 1
 
             # We have exhausted all possibilities for this chain length.
             # Increment chain length and reset.
-            if empty_layer and pos == 0:
+            elif empty_layer and pos == 0:
                 self.remaining_options = [self.letters.copy() for _ in
                                           range(len(self.remaining_options) + 1)]
                 self.chain = []
