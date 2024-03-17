@@ -12,4 +12,4 @@ If you would like to compile your own dictionary from the [GCIDE](https://gcide.
 beautifulsoup4==4.12.3
 ```
 # Ackowledgements
-Words were sourced from the [GNU Collaborative International Dictionary of English](https://gcide.gnu.org.ua/)
+The dictionary usedwas sourced from the [GNU Collaborative International Dictionary of English](https://gcide.gnu.org.ua/). Project contains code written by OpenAI's GPT4.
